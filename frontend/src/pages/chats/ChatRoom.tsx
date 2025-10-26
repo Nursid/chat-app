@@ -28,7 +28,7 @@ interface UserProps {
 const ChatRoom: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState("");
-  const [isJoined, setIsJoined] = useState(false);
+  const [isJoined, setIsJoined] = useState(true);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [errors, setErrors] = useState({});
 
@@ -120,6 +120,7 @@ const ChatRoom: React.FC = () => {
       chatId: activeChat.id,
     };
     socket.emit("private_message", msgPayload);
+    setMessages((prev)=> [...prev, msgPayload ] )
     setMessageInput("");
   };
 

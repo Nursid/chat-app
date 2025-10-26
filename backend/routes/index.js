@@ -6,7 +6,9 @@ const messageController = require("../controller/messageController")
 const userController = require("../controller/userController")
 
 router.get('/chats/:chatId', chatController.getChat);
-router.get('/chats/:chatId/messages', messageController.getMessages);
+
+router.get("/message/:sender/:receiver", messageController.getMessages);
+
 
 router.post("/user/add",userController.addUser)
 router.get("/user/getall",userController.getUser)

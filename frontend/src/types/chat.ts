@@ -1,10 +1,10 @@
 
 export interface Message {
-    from: string;
+    sender: string;
     text: string;
     createdAt: string;
     chatId?: string;
-    to: string;
+    receiver: string;
   }
   
   export interface Chat {
@@ -18,6 +18,13 @@ export interface Message {
     username: string;
     password: string;
     _id: string;
+  }
+
+    
+  export interface MessageState {
+    loading: boolean;
+    message: Message[];
+    error: string | null;
   }
   
   console.log("✅ chat.ts loaded");

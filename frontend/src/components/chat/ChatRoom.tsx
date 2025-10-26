@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllUsers } from "@/redux/actions/userActions";
 import type { AppState } from "@/redux/store";
 import { connectSocket, getSocket } from "@/services/socket";
+import { getAllMessage } from "@/redux/actions/messageActions";
 
 const ChatRoom: React.FC = () => {
   const { user } = useAuth();
@@ -17,16 +18,30 @@ const ChatRoom: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState("");
   const userList = useSelector((state: AppState) => state.userList);
+  const messageList = useSelector((state: AppState) => state.messageList);
 
 
   const dispatch = useDispatch();
   
   const { loading, users: chats, error } = userList;
+  const { loading: messageLoading, message: message, error: messageError } = messageList;
 
   // ✅ Fetch users on component mount
   useEffect(() => {
     dispatch<any>(getAllUsers(user?._id));
   }, [dispatch, user?._id]);
+
+  useEffect(() => {
+    dispatch<any>(getAllMessage(user?._id, activeChat?._id));
+  }, [dispatch, activeChat]);
+
+
+  useEffect(() => {
+    if (message && Array.isArray(message)) {
+      setMessages(message);
+    }
+  }, [message]);
+  
 
   useEffect(() => {
     const socket = connectSocket();
@@ -35,7 +50,6 @@ const ChatRoom: React.FC = () => {
 
     // listen for messages for any room the user has joined
     socket.on("new_message", (msg: Message) => {
-      console.log(msg)
       setMessages((prev) => [...prev, msg]);
     });
 
@@ -53,13 +67,12 @@ const ChatRoom: React.FC = () => {
     const socket = getSocket();
 
     const msg: Message = {
-      from: user._id,
+      sender: user._id,
       text: messageInput,
-      to: activeChat._id,
+      receiver: activeChat._id,
       createdAt: new Date().toLocaleTimeString(),
       chatId: activeChat._id, // make sure _id exists in Chat type
     };
-    console.log(msg)
     socket.emit("private_message", msg);
     setMessages((prev) => [...prev, msg]);
     setMessageInput("");
@@ -76,26 +89,28 @@ const ChatRoom: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen">
-    {loading ? (
-  <p>Loading users...</p> // ✅ Show this when loading
-) : (
-  <>
-    <ChatList
-      chats={chats}
-      activeChat={activeChat}
-      onSelectChat={setActiveChat}
-    />
-    <ChatWindow
-      messages={messages}
-      currentUser={user._id}
-      messageInput={messageInput}
-      setMessageInput={setMessageInput}
-      handleSendMessage={handleSendMessage}
-    />
-  </>
-)}
-
+    <div className="flex h-screen bg-[#1a1a2e] text-white">
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-gray-400">Loading users...</p>
+        </div>
+      ) : (
+        <>
+          <ChatList
+            chats={chats}
+            activeChat={activeChat}
+            onSelectChat={setActiveChat}
+          />
+          <ChatWindow
+            activeChat={activeChat}
+            messages={messages}
+            currentUser={user._id}
+            messageInput={messageInput}
+            setMessageInput={setMessageInput}
+            handleSendMessage={handleSendMessage}
+          />
+        </>
+      )}
     </div>
   );
 };

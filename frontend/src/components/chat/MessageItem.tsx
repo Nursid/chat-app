@@ -8,20 +8,21 @@ interface MessageItemProps {
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({ msg, currentUser }) => {
-  const isMine = msg.from === currentUser;
+  const isMine = msg.sender === currentUser;
 
   return (
-    <div className={`mb-2 flex flex-col ${isMine ? "items-end" : "items-start"}`}>
-      <p className="text-sm font-semibold">{msg.from}</p>
-      <div
-        className={`inline-block px-3 py-2 rounded-lg max-w-xs break-words ${
-          isMine ? "bg-blue-500 text-white" : "bg-gray-200 text-black"
-        }`}
-      >
-        {msg.text}
-      </div>
-      <p className="text-xs text-gray-500">{msg.createdAt}</p>
+    <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-4`}>
+    <div
+      className={`max-w-md px-4 py-2.5 rounded-2xl ${
+        isMine
+          ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white"
+          : "bg-[#2a2a4e] text-white"
+      }`}
+    >
+      <p className="mb-1">{msg.text}</p>
+      <span className="text-xs opacity-70">{msg.createdAt}</span>
     </div>
+  </div>
   );
 };
 

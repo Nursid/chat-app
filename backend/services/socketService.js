@@ -24,7 +24,6 @@ function initSocket(io) {
     // join a chat room (client opens chat)
     socket.on('join_chat', async ({ chatId, userId: uid }) => {
       socket.join(chatId);
-      console.log("====",chatId,uid)
       // mark messages as delivered for this user
       await Message.updateMany({ chatId, receiver: uid, delivered: false }, { delivered: true });
       io.to(chatId).emit('messages_delivered', { chatId, userId: uid });
@@ -35,27 +34,25 @@ function initSocket(io) {
 
     // private message event
     socket.on('private_message', async (payload, ack) => {
-      // payload: { from, to, text, chatId?, tempId? }
+      // payload: { sender, receiver, text, chatId?, tempId? }
       try {
-        const from = payload.from;
-        const to = payload.to;
+        const sender = payload.sender;
+        const receiver = payload.receiver;
         const text = payload.text;
-        const chatId = payload.chatId || getRoomId(from, to);
+        const chatId = payload.chatId || getRoomId(sender, receiver);
         // ensure chat exists
         let chat = await Chat.findById(chatId);
         if (!chat) {
-          chat = await Chat.create({ _id: chatId, users: [from, to], unreadCount: {} });
+          chat = await Chat.create({ _id: chatId, users: [sender, receiver], unreadCount: {} });
         }
 
-        const msg = await Message.create({ chatId, sender: from, receiver: to, text });
-
-        console.log("msg---",msg)
+        const msg = await Message.create({ chatId, sender: sender, receiver: receiver, text });
 
         // update chat latestMessage and unread counts
         chat.latestMessage = msg._id;
 
         // detect if recipient is in room
-        const recipientSockets = onlineMap.get(to);
+        const recipientSockets = onlineMap.get(receiver);
         let recipientInRoom = false;
         if (recipientSockets) {
           for (const sid of recipientSockets) {
@@ -68,18 +65,18 @@ function initSocket(io) {
         }
 
         // update unread if not in room
-        const prev = chat.unreadCount?.get(to) || 0;
-        if (!recipientInRoom) chat.unreadCount.set(to, prev + 1);
+        const prev = chat.unreadCount?.get(receiver) || 0;
+        if (!recipientInRoom) chat.unreadCount.set(receiver, prev + 1);
 
         await chat.save();
 
-        // Broadcast to the chat room
+        // Broadcast receiver the chat room
         const payloadOut = {
           message: {
             _id: msg._id,
             chatId,
-            sender: from,
-            receiver: to,
+            sender: sender,
+            receiver: receiver,
             text,
             createdAt: msg.createdAt,
             delivered: recipientInRoom,
@@ -87,6 +84,7 @@ function initSocket(io) {
           },
           tempId: payload.tempId || null
         };
+        console.log("---",payloadOut)
 
         io.to(chatId).emit('new_message', payloadOut);
 
@@ -97,7 +95,7 @@ function initSocket(io) {
       }
     });
 
-    
+
 
     socket.on('message_seen', async ({ messageId, chatId, userId: uid }) => {
       try {

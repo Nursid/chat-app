@@ -1,25 +1,31 @@
 import { createStore, combineReducers, applyMiddleware } from "redux";
-import {thunk} from "redux-thunk";
+import { thunk } from "redux-thunk";
 import type { ThunkMiddleware } from "redux-thunk";
-import { composeWithDevTools } from "redux-devtools-extension"; // ✅ fixed import
+import { composeWithDevTools } from "redux-devtools-extension";
 import { userListReducer } from "./reducers/userReducer";
+import { messageListReducer } from "./reducers/messageReducer";
 import type { UserActionTypes } from "./actions/userActions";
 import type { UserState } from "@/types/userType";
+import type { MessageState } from "@/types/chat";
 
-// AppState interface
+// ✅ Define AppState interface
 export interface AppState {
   userList: UserState;
+  messageList: MessageState;
 }
 
-// Combine reducers
+// ✅ Combine reducers
 const rootReducer = combineReducers<AppState>({
   userList: userListReducer,
+  messageList: messageListReducer,
 });
 
-// Middleware
-const middleware = [thunk as ThunkMiddleware<AppState, UserActionTypes>];
+// ✅ Middleware (with proper typing)
+const middleware = [
+  thunk as ThunkMiddleware<AppState, UserActionTypes>,
+];
 
-// Create store with DevTools
+// ✅ Create store with DevTools
 const store = createStore(
   rootReducer,
   composeWithDevTools(applyMiddleware(...middleware))
