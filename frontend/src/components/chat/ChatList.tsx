@@ -7,9 +7,10 @@ interface ChatListProps {
   chats: Chat[];
   activeChat: Chat | null;
   onSelectChat: (chat: Chat) => void;
+  onlineUsers: Set<string>;
 }
 
-const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onSelectChat }) => {
+const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onSelectChat, onlineUsers }) => {
 
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -44,7 +45,10 @@ const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onSelectChat }) 
 
     {/* Chat List */}
     <div className="flex-1 overflow-y-auto">
-      {chats.map((chat) => (
+      {chats.map((chat) => {
+    const isOnline = onlineUsers.has(chat._id);
+        return (
+
         <div
           key={chat._id}
           onClick={() => onSelectChat(chat)}
@@ -56,7 +60,7 @@ const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onSelectChat }) 
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xl font-semibold">
               {chat.name?.charAt(0).toUpperCase() || "?"}
             </div>
-            {chat.online && (
+            {isOnline && (
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#16213e]"></div>
             )}
           </div>
@@ -79,7 +83,9 @@ const ChatList: React.FC<ChatListProps> = ({ chats, activeChat, onSelectChat }) 
             </div>
           </div>
         </div>
-      ))}
+      )
+    }
+      )}
     </div>
   </div>
   );

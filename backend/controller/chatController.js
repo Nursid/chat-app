@@ -1,6 +1,6 @@
 const Chat = require('../models/Chat');
 
-exports.getChat = async (req, res) => {
+const getChat = async (req, res) => {
   const { chatId } = req.params;
   try {
     const chat = await Chat.findById(chatId).populate('latestMessage').lean();
@@ -10,3 +10,7 @@ exports.getChat = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch chat' });
   }
 };
+
+
+
+module.exports = {getChat}

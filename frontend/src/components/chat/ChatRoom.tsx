@@ -25,7 +25,7 @@ const ChatRoom: React.FC = () => {
 
   const userList = useSelector((state: AppState) => state.userList);
   const messageList = useSelector((state: AppState) => state.messageList);
-
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const dispatch = useDispatch();
 
   const { loading, users: chats, error } = userList;
@@ -84,6 +84,29 @@ const ChatRoom: React.FC = () => {
     }
   }, [currentChatId]);
 
+
+  // Handler for a user coming online
+  const handleUserOnline = (payload: { userId: string }) => {
+    console.log(`User ${payload.userId} is now ONLINE`);
+    setOnlineUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.add(payload.userId);
+        return newSet;
+    });
+};
+
+// Handler for a user going offline
+const handleUserOffline = (payload: { userId: string }) => {
+    console.log(`User ${payload.userId} is now OFFLINE`);
+    setOnlineUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(payload.userId);
+        return newSet;
+    });
+};
+
+
+
   // ✅ Setup socket listeners when user is available
   useEffect(() => {
     if (!user) return;
@@ -98,6 +121,11 @@ const ChatRoom: React.FC = () => {
       return;
     }
 
+        // ❗️ Add Listeners
+    socket.on("user_online", handleUserOnline);
+    socket.on("user_offline", handleUserOffline);
+
+
     socket.on("new_message", handleNewMessage);
     socket.on("messages_delivered", handleMessagesDelivered);
 
@@ -105,6 +133,10 @@ const ChatRoom: React.FC = () => {
       // Clean up listeners on component unmount or user change
       socket.off("new_message", handleNewMessage);
       socket.off("messages_delivered", handleMessagesDelivered);
+      // ❗️ Add Listeners
+      socket.off("user_online", handleUserOnline);
+      socket.off("user_offline", handleUserOffline);
+
     };
   }, [user, handleNewMessage, handleMessagesDelivered]); // Rerun if user or handlers change
 
@@ -131,18 +163,6 @@ const ChatRoom: React.FC = () => {
 
     // Create a temporary message for optimistic UI update
     const tempId = `temp-${Date.now()}`;
-    // const tempMessage: Message = {
-    //   _id: tempId, // Temporary ID
-    //   sender: user._id,
-    //   text: messageInput,
-    //   receiver: activeChat._id, // The other user's ID
-    //   createdAt: new Date().toISOString(), // Use ISO string for consistency
-    //   chatId: currentChatId,
-    // };
-
-    // 1. Update UI immediately
-    // setMessages((prev) => [...prev, tempMessage]);
-
     // 2. Send message to server
     socket.emit("private_message", {
       sender: user._id,
@@ -169,6 +189,8 @@ const ChatRoom: React.FC = () => {
     setMessageInput("");
   };
 
+  console.log("onlineUsers---",onlineUsers)
+
   if (!user) {
     return showLogin ? (
       <LoginForm switchToSignup={() => setShowLogin(false)} />
@@ -189,6 +211,7 @@ const ChatRoom: React.FC = () => {
             chats={chats}
             activeChat={activeChat}
             onSelectChat={handleSelectChat} // 👈 Use new handler
+            onlineUsers={onlineUsers}
           />
           <ChatWindow
             activeChat={activeChat}
@@ -197,6 +220,7 @@ const ChatRoom: React.FC = () => {
             messageInput={messageInput}
             setMessageInput={setMessageInput}
             handleSendMessage={handleSendMessage}
+            isRecipientOnline={activeChat ? onlineUsers.has(activeChat._id) : false} 
           />
         </>
       )}

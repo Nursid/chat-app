@@ -74,6 +74,7 @@ interface ChatWindowProps {
   messageInput: string;
   setMessageInput: (val: string) => void;
   handleSendMessage: () => void;
+  isRecipientOnline: Boolean
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -83,6 +84,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   setMessageInput,
   handleSendMessage,
   activeChat,
+  isRecipientOnline
 }) => {
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
@@ -103,6 +105,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     );
   }
 
+
   // ⭐️ Group messages by date here ⭐️
   const groupedMessages = groupMessagesByDate(messages);
 
@@ -117,8 +120,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           <div>
             <h2 className="font-semibold text-white">{activeChat.name}</h2>
             <p className="text-xs text-gray-400">
-              {activeChat.online ? "Online" : "Offline"}
-            </p>
+              {isRecipientOnline ? "Online" : "Offline"}
+            </p>  
           </div>
         </div>
         <div className="flex gap-2">
