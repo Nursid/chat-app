@@ -13,11 +13,11 @@ interface UserProps {
 }
 
 interface LoginFormProps {
-  onLogin: (user: UserProps) => void;
+  // onLogin: (user: UserProps) => void;
   switchToSignup: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin, switchToSignup }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ switchToSignup }) => {
     const {login}  = useAuth()
   const [formData, setFormData] = useState<Partial<UserProps>>({
     username: "",
@@ -68,8 +68,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, switchToSignup }) => {
 
     try {
       // Simulate API call
-       await login(formData.username, formData.password);
-      onLogin(isLogin)
+      await login(formData.username!, formData.password!);
+      // onLogin(isLogin)
     } catch (err: any) {
       setError("Invalid username or password");
       setError(err.message || "An error occurred during login");

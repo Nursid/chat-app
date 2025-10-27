@@ -20,10 +20,13 @@ const MessageItem: React.FC<MessageItemProps> = ({ msg, currentUser }) => {
       }`}
     >
       <p className="mb-1">{msg.text}</p>
-      <span className="text-xs opacity-70">{msg.createdAt}</span>
+      <span className="text-xs opacity-70">{new Date(msg.createdAt).toLocaleTimeString([], {
+  hour: "2-digit",
+  minute: "2-digit",
+})}</span>
     </div>
   </div>
   );
 };
 
-export default MessageItem;
+export default React.memo(MessageItem);

@@ -13,16 +13,10 @@ exports.getMessages = async (req, res) => {
       .sort({ createdAt: 1 }) // oldest → newest
       .limit(200);
       
-    // ✅ Format createdAt safely
-    const formattedMessages = messages.map(msg => ({
-      ...msg.toObject(),
-      createdAt: new Date(msg.createdAt).toLocaleTimeString(), // ✅ converts ISO → readable time
-    }));
-
     res.status(200).json({
       success: true,
-      count: formattedMessages.length,
-      data: formattedMessages,
+      count: messages.length,
+      data: messages,
     });
 
   } catch (err) {

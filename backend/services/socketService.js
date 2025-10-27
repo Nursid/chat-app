@@ -84,7 +84,6 @@ function initSocket(io) {
           },
           tempId: payload.tempId || null
         };
-        console.log("---",payloadOut)
 
         io.to(chatId).emit('new_message', payloadOut);
 
